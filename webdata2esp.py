@@ -13,19 +13,18 @@ mJS = min_js.MinJS()
 
 # User config ------------------------------------
 
-name_for_if_path = 'wfr_fgmt_webif_'
 the_project_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFR_v0.2'))
+the_if_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfr_fgmt_webif_'))
 fnames = {
     "0": ['index.html'],
-    "1": ['index.html']
+    "1": ['index.html'],
+    "main": ['index.html']
 }
 interface_type = "main"
 
 # ------------------------------------
 
-path = os.path.join(the_project_path, name_for_if_path+interface_type)
-
-path_min = os.path.join(path, 'min')
+path_min = os.path.join(os.getcwd(), 'temp')
 if not os.path.exists(path_min): os.mkdir(path_min)
 fname_out = os.path.join(the_project_path, 'webpage'+interface_type+'.ino')
 fname_out2 = os.path.join(the_project_path, 'set_handlers'+interface_type+'.ino')
@@ -56,22 +55,22 @@ for fname_in in fnames[interface_type]:
 
     fname_in_min = get_fname_min(fname_in)
     
-    fpath_in = os.path.join(path, fname_in)
+    fpath_in = os.path.join(the_if_path+interface_type, fname_in)
     fpath_in_min = os.path.join(path_min, fname_in)
  
     os.system('cp '+fpath_in+' '+fpath_in_min)
 
-    fpath_in = fpath_in_min
-    
     # minificate the file
     print('  minificating...')
     
     if fname_in.split('.')[-1] == 'html':
-        mHTML.min(fpath_in, fpath_in, fnames[interface_type])
+        mHTML.min(fpath_in, fpath_in_min, fnames[interface_type])
     elif fname_in.split('.')[-1] == 'css': 
-        mCSS.min(fpath_in, fpath_in)
+        mCSS.min(fpath_in, fpath_in_min)
     elif fname_in.split('.')[-1] == 'js': 
-        mJS.min(fpath_in, fpath_in)
+        mJS.min(fpath_in, fpath_in_min)
+
+    fpath_in = fpath_in_min
 
     # archivate (compress) the file
     print('  archivating...')
