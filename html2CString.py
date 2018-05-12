@@ -1,12 +1,13 @@
 import re
 import mimetypes
 import os
-import tinycss2
 import gzip
 
 import min_html
+import min_css
 
 mHTML = min_html.MinHTML()
+mCSS = min_css.MinCSS()
 
 fnames = {
     "0": ['index.html'],
@@ -52,19 +53,7 @@ for fname_in in fnames[interface_type]:
     if fname_in.split('.')[-1] == 'html':
         mHTML.min(fpath_in, fpath_in, fnames[interface_type])
     elif fname_in.split('.')[-1] == 'css': 
-        with open(fpath_in, 'r') as f:
-           css = tinycss2.parse_stylesheet(f.read(), True, True)
-        with open(fpath_in, 'w') as f:
-            for rule in css:
-                rule = rule.serialize()
-                rule = re.sub(r'\s+', ' ', rule)
-                rule = re.sub(r'\s*}\s*', '}', rule)
-                rule = re.sub(r'\s*{\s*', '{', rule)
-                rule = re.sub(r'\s*;\s*', ';', rule)
-                rule = re.sub(r'\s*,\s*', ',', rule)
-                rule = re.sub(r'\s*,\s*', ',', rule)
-                rule = re.sub(r'\s*:\s*', ':', rule)
-                f.write(rule)
+        mCSS.min(fpath_in, fpath_in)
     elif fname_in.split('.')[-1] == 'js': 
         compiler = 'closure-compiler-v20180402.jar';
         os.system('java -jar '+compiler+' --js '+fpath_in+' --js_output_file '+fpath_in+'_')
