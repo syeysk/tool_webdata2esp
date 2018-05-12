@@ -8,6 +8,7 @@ import min_css
 
 mHTML = min_html.MinHTML()
 mCSS = min_css.MinCSS()
+mJS = min_js.MinJS()
 
 fnames = {
     "0": ['index.html'],
@@ -50,20 +51,23 @@ for fname_in in fnames[interface_type]:
 
     fpath_in = fpath_in_min
     
+    # minificate the file
+    
     if fname_in.split('.')[-1] == 'html':
         mHTML.min(fpath_in, fpath_in, fnames[interface_type])
     elif fname_in.split('.')[-1] == 'css': 
         mCSS.min(fpath_in, fpath_in)
     elif fname_in.split('.')[-1] == 'js': 
-        compiler = 'closure-compiler-v20180402.jar';
-        os.system('java -jar '+compiler+' --js '+fpath_in+' --js_output_file '+fpath_in+'_')
-        # перемименовываем, затирая неминимизированную копию. (джава не хочет затирать существующий файл :( )
-        os.system('mv '+fpath_in+'_ '+fpath_in)
+        mJS.min(fpath_in, fpath_in)
+
+    # archivate (compress) the file
 
     with open(fpath_in+'.gz', 'wb') as myzip:
         with open(fpath_in, 'rb') as s:
             myzip.write(gzip.compress(s.read()))
     fpath_in = fpath_in+'.gz'
+
+    # convert into C-code for Arduino
     
     with open(fpath_in, 'rb') as f_in, open(fname_out, 'a') as f_out, open(fname_out2, 'a') as f_out2, open(fname_out3, 'a') as f_out3:
         fmtype = mimetypes.guess_type(fname_in)
@@ -77,9 +81,6 @@ for fname_in in fnames[interface_type]:
         f_out2.write("    webServer.on(\"/"+fname_in+"\", HTTP_GET, "+func_name+");\r\n");
         f_out3.write("const char const_"+func_name+"["+str(fsize_in)+"] PROGMEM = {")
 
-        #for line in f_in:
-        #    line = str([i for i in line])[1:-1]
-        #    f_out3.write(line.replace(' ', ''))
         for i in range(1, fsize_in):
             f_out3.write(str(f_in.read(1)[0])+',')
             f_in.seek(i)
