@@ -1,10 +1,12 @@
 import re
 import mimetypes
 import os
-import lxml.html as html
-#from lxml.html import html5parser as html
 import tinycss2
 import gzip
+
+import min_html
+
+mHTML = min_html.MinHTML()
 
 fnames = {
     "0": ['index.html'],
@@ -36,17 +38,6 @@ f_out3.close();
 def get_fname_min(fname):
     return '.'.join(fname.split('.')[:-1])+'_min.'+fname.split('.')[-1]
 
-def minificate(el, level=0):
-    if len(el.getchildren()) > 0:
-        for _el in el.getchildren():
-            minificate(_el, level+1)
-    else:
-        if not isinstance(el.tag, str): el.getparent().remove(el)
-        elif el.tag == 'script' and 'src' in el.attrib and el.attrib['src']:
-            fnames[interface_type].append(el.attrib['src'])
-        elif el.tag == 'link' and 'href' in el.attrib and el.attrib['href']:
-            fnames[interface_type].append(el.attrib['href'])
-
 for fname_in in fnames[interface_type]:
 
     fname_in_min = get_fname_min(fname_in)
@@ -59,9 +50,7 @@ for fname_in in fnames[interface_type]:
     fpath_in = fpath_in_min
     
     if fname_in.split('.')[-1] == 'html':
-        document = html.parse(fpath_in)
-        minificate(document.getroot())
-        document.write(fpath_in);
+        mHTML.min(fpath_in, fpath_in, fnames[interface_type])
     elif fname_in.split('.')[-1] == 'css': 
         with open(fpath_in, 'r') as f:
            css = tinycss2.parse_stylesheet(f.read(), True, True)
