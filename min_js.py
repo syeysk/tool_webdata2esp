@@ -1,3 +1,5 @@
+import os
+
 class MinJS:
     
     def __init__(self):

@@ -5,23 +5,31 @@ import gzip
 
 import min_html
 import min_css
+import min_js
 
 mHTML = min_html.MinHTML()
 mCSS = min_css.MinCSS()
 mJS = min_js.MinJS()
 
+# User config ------------------------------------
+
+name_for_if_path = 'wfr_fgmt_webif_'
+the_project_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFR_v0.2'))
 fnames = {
     "0": ['index.html'],
     "1": ['index.html']
 }
-interface_type = "1"
+interface_type = "main"
 
-path = 'interface_type'+interface_type
+# ------------------------------------
+
+path = os.path.join(the_project_path, name_for_if_path+interface_type)
+
 path_min = os.path.join(path, 'min')
 if not os.path.exists(path_min): os.mkdir(path_min)
-fname_out = 'webpage'+interface_type+'.ino'
-fname_out2 = 'set_handlers'+interface_type+'.ino'
-fname_out3 = 'constants'+interface_type+'.ino'
+fname_out = os.path.join(the_project_path, 'webpage'+interface_type+'.ino')
+fname_out2 = os.path.join(the_project_path, 'set_handlers'+interface_type+'.ino')
+fname_out3 = os.path.join(the_project_path, 'constants'+interface_type+'.ino')
 
 preproc_str = "#if INTERFACE_TYPE == "+interface_type+"\r\n"
 
@@ -40,7 +48,11 @@ f_out3.close();
 def get_fname_min(fname):
     return '.'.join(fname.split('.')[:-1])+'_min.'+fname.split('.')[-1]
 
+print()
+
 for fname_in in fnames[interface_type]:
+    
+    print('file:', fname_in)
 
     fname_in_min = get_fname_min(fname_in)
     
@@ -52,6 +64,7 @@ for fname_in in fnames[interface_type]:
     fpath_in = fpath_in_min
     
     # minificate the file
+    print('  minificating...')
     
     if fname_in.split('.')[-1] == 'html':
         mHTML.min(fpath_in, fpath_in, fnames[interface_type])
@@ -61,6 +74,7 @@ for fname_in in fnames[interface_type]:
         mJS.min(fpath_in, fpath_in)
 
     # archivate (compress) the file
+    print('  archivating...')
 
     with open(fpath_in+'.gz', 'wb') as myzip:
         with open(fpath_in, 'rb') as s:
@@ -68,6 +82,7 @@ for fname_in in fnames[interface_type]:
     fpath_in = fpath_in+'.gz'
 
     # convert into C-code for Arduino
+    print('  converting...')
     
     with open(fpath_in, 'rb') as f_in, open(fname_out, 'a') as f_out, open(fname_out2, 'a') as f_out2, open(fname_out3, 'a') as f_out3:
         fmtype = mimetypes.guess_type(fname_in)
