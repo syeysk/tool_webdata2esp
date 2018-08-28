@@ -13,7 +13,7 @@ mJS = min_js.MinJS()
 
 # User config ------------------------------------
 
-the_project_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFR_v0.2'))
+the_project_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFR'))
 the_if_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfr_fgmt_webif_'))
 fnames = {
     "0": ['index.html'],
@@ -44,17 +44,12 @@ f_out3 = open(fname_out3, 'w')
 f_out3.write(preproc_str+'\r\n')
 f_out3.close();
 
-def get_fname_min(fname):
-    return '.'.join(fname.split('.')[:-1])+'_min.'+fname.split('.')[-1]
-
 print()
 
 for fname_in in fnames[interface_type]:
     
     print('file:', fname_in)
 
-    fname_in_min = get_fname_min(fname_in)
-    
     fpath_in = os.path.join(the_if_path+interface_type, fname_in)
     fpath_in_min = os.path.join(path_min, fname_in)
  
@@ -87,7 +82,7 @@ for fname_in in fnames[interface_type]:
         fmtype = mimetypes.guess_type(fname_in)
         fmtype = fmtype[0] if fmtype[0] is not None else 'text/plain'
         fsize_in = os.path.getsize(fpath_in)
-        func_name = "handler_"+fname_in.replace('.', '_')
+        func_name = "handler_"+fname_in.replace('.', '_').replace('/', '_')
 
         f_out.write("void "+func_name+"() {\r\n");
         f_out.write("    webServer.sendHeader(\"Content-Encoding\", \"gzip\");\r\n");
