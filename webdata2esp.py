@@ -13,8 +13,8 @@ mJS = min_js.MinJS()
 
 # User config ------------------------------------
 
-the_project_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFR'))
-the_if_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfr_fgmt_webif_'))
+the_project_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
+the_if_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfnli_fgmt_webif_'))
 fnames = {
     "0": ['index.html'],
     "1": ['index.html'],
@@ -53,7 +53,8 @@ for fname_in in fnames[interface_type]:
     fpath_in = os.path.join(the_if_path+interface_type, fname_in)
     fpath_in_min = os.path.join(path_min, fname_in)
  
-    os.system('cp '+fpath_in+' '+fpath_in_min)
+    os.system('mkdir -p "'+os.path.dirname(fpath_in_min)+'" && cp "'+fpath_in+'" "'+fpath_in_min+'"')
+    fpath_in = fpath_in_min
 
     # minificate the file
     print('  minificating...')
@@ -64,8 +65,6 @@ for fname_in in fnames[interface_type]:
         mCSS.min(fpath_in, fpath_in_min)
     elif fname_in.split('.')[-1] == 'js': 
         mJS.min(fpath_in, fpath_in_min)
-
-    fpath_in = fpath_in_min
 
     # archivate (compress) the file
     print('  archivating...')
