@@ -3,6 +3,8 @@ import mimetypes
 import os
 import gzip
 
+from jinja2 import Environment, FileSystemLoader#, select_autoescape
+
 import min_html
 import min_css
 import min_js
@@ -11,47 +13,47 @@ mHTML = min_html.MinHTML()
 mCSS = min_css.MinCSS()
 mJS = min_js.MinJS()
 
-# User config ------------------------------------
+# ---------------------------------------------------------------------
+# ---------------- User config
 
-the_project_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
-the_if_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfnli_fgmt_webif_'))
-fnames = {
-    "0": ['index.html'],
-    "1": ['index.html'],
-    "main": ['index.html']
-}
-interface_type = "main"
+input_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfnli_fgmt_webif_main'))
+temp_path = os.path.join(os.getcwd(), 'temp')
+output_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
+fnames = ['index.html']
 
-# ------------------------------------
+# ---------------------------------------------------------------------
+# ---------------- Compilate templates
 
-path_min = os.path.join(os.getcwd(), 'temp')
-if not os.path.exists(path_min): os.mkdir(path_min)
-fname_out = os.path.join(the_project_path, 'webpage'+interface_type+'.ino')
-fname_out2 = os.path.join(the_project_path, 'set_handlers'+interface_type+'.ino')
-fname_out3 = os.path.join(the_project_path, 'constants'+interface_type+'.ino')
+env = Environment(
+    loader=FileSystemLoader('')
+    #autoescape=select_autoescape(['html', 'xml'])
+)
 
-preproc_str = "#if INTERFACE_TYPE == "+interface_type+"\r\n"
+# ---------------------------------------------------------------------
+
+if not os.path.exists(temp_path): os.mkdir(temp_path)
+fname_out = os.path.join(output_path, 'webpage.ino')
+fname_out2 = os.path.join(output_path, 'set_handlers.ino')
+fname_out3 = os.path.join(output_path, 'constants.ino')
 
 f_out = open(fname_out, 'w')
-f_out.write(preproc_str)
 f_out.close();
 
 f_out2 = open(fname_out2, 'w')
-f_out2.write(preproc_str+'void set_handlers(void) {\r\n')
+f_out2.write('void set_handlers(void) {\r\n')
 f_out2.close();
 
 f_out3 = open(fname_out3, 'w')
-f_out3.write(preproc_str+'\r\n')
 f_out3.close();
 
 print()
 
-for fname_in in fnames[interface_type]:
+for fname_in in fnames:
     
     print('file:', fname_in)
 
-    fpath_in = os.path.join(the_if_path+interface_type, fname_in)
-    fpath_in_min = os.path.join(path_min, fname_in)
+    fpath_in = os.path.join(input_path, fname_in)
+    fpath_in_min = os.path.join(temp_path, fname_in)
  
     os.system('mkdir -p "'+os.path.dirname(fpath_in_min)+'" && cp "'+fpath_in+'" "'+fpath_in_min+'"')
     fpath_in = fpath_in_min
@@ -60,7 +62,7 @@ for fname_in in fnames[interface_type]:
     print('  minificating...')
     
     if fname_in.split('.')[-1] == 'html':
-        mHTML.min(fpath_in, fpath_in_min, fnames[interface_type])
+        mHTML.min(fpath_in, fpath_in_min, fnames)
     elif fname_in.split('.')[-1] == 'css': 
         mCSS.min(fpath_in, fpath_in_min)
     elif fname_in.split('.')[-1] == 'js': 
@@ -95,15 +97,14 @@ for fname_in in fnames[interface_type]:
         f_out.write("    webServer.send_P(200, \""+fmtype+"\", const_"+func_name+", "+str(fsize_in)+");\r\n}\r\n");
         f_out3.write("0};\r\n")
 
-
 f_out = open(fname_out, 'a')
-f_out.write("#endif\r\n")
+f_out.write("\r\n")
 f_out.close();
 
 f_out2 = open(fname_out2, 'a')
-f_out2.write("}\r\n#endif\r\n")
+f_out2.write("}\r\n")
 f_out2.close();
 
 f_out3 = open(fname_out3, 'a')
-f_out3.write("\r\n#endif\r\n")
+f_out3.write("\r\n")
 f_out3.close();
