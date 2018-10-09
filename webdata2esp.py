@@ -2,6 +2,7 @@ import re
 import mimetypes
 import os
 import gzip
+import sys
 
 from jinja2 import Environment, FileSystemLoader#, select_autoescape
 
@@ -23,15 +24,20 @@ fnames = ['index.html']
 
 fname_out = os.path.join(output_path, 'webpage.ino')
 fname_out2 = os.path.join(output_path, 'set_handlers.ino')
-fname_out3 = os.path.join(output_path, 'constants.ino')
+fname_out3 = os.path.join(output_path, 'constants.osino')
+
+languages_path = os.path.join(input_path, 'languages')
 
 if not os.path.exists(temp_path): os.mkdir(temp_path)
+
+sys.path.append(languages_path)
+from EN import context
 
 # ---------------------------------------------------------------------
 # ---------------- Compilate templates
 
 env = Environment(
-    loader=FileSystemLoader('')
+    loader=FileSystemLoader(input_path)
     #autoescape=select_autoescape(['html', 'xml'])
 )
 
@@ -47,11 +53,18 @@ with open(fname_out, 'w') as f_out, open(fname_out2, 'w') as f_out2, open(fname_
     
         print('file:', fname_in)
 
+
         fpath_in = os.path.join(input_path, fname_in)
         fpath_in_min = os.path.join(temp_path, fname_in)
  
         os.system('mkdir -p "'+os.path.dirname(fpath_in_min)+'" && cp "'+fpath_in+'" "'+fpath_in_min+'"')
         fpath_in = fpath_in_min
+
+        # compilation of template
+        print('  compilation of template...')
+
+        template = env.get_template(fname_in)
+        with open(fpath_in, 'w') as f: f.write(template.render(context))
 
         # minificate the file
         print('  minificating...')
