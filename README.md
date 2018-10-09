@@ -1,6 +1,7 @@
 You need these python-modules: 
 - tinycss: https://tinycss.readthedocs.io/en/latest/ `pip install tinycss`
 - lxml: http://lxml.de/
+- jinja2: http://jinja.pocoo.org/docs/2.10/intro/
 
 You need Google Closure Compiler:
 
