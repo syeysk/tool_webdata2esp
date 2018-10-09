@@ -21,6 +21,12 @@ temp_path = os.path.join(os.getcwd(), 'temp')
 output_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
 fnames = ['index.html']
 
+fname_out = os.path.join(output_path, 'webpage.ino')
+fname_out2 = os.path.join(output_path, 'set_handlers.ino')
+fname_out3 = os.path.join(output_path, 'constants.ino')
+
+if not os.path.exists(temp_path): os.mkdir(temp_path)
+
 # ---------------------------------------------------------------------
 # ---------------- Compilate templates
 
@@ -30,11 +36,6 @@ env = Environment(
 )
 
 # ---------------------------------------------------------------------
-
-if not os.path.exists(temp_path): os.mkdir(temp_path)
-fname_out = os.path.join(output_path, 'webpage.ino')
-fname_out2 = os.path.join(output_path, 'set_handlers.ino')
-fname_out3 = os.path.join(output_path, 'constants.ino')
 
 with open(fname_out, 'w') as f_out, open(fname_out2, 'w') as f_out2, open(fname_out3, 'w') as f_out3:
 
