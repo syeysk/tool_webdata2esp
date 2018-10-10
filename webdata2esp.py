@@ -17,21 +17,27 @@ mJS = min_js.MinJS()
 # ---------------------------------------------------------------------
 # ---------------- User config
 
-input_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfnli_fgmt_webif_main'))
+input_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfr_fgmt_webif_main'))
+output_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFR'))
+#input_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfnli_fgmt_webif_main'))
+#output_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
+
+lang = "EN"
+
 temp_path = os.path.join(os.getcwd(), 'temp')
-output_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
 fnames = ['index.html']
 
 fname_out = os.path.join(output_path, 'webpage.ino')
 fname_out2 = os.path.join(output_path, 'set_handlers.ino')
-fname_out3 = os.path.join(output_path, 'constants.osino')
+fname_out3 = os.path.join(output_path, 'constants.ino')
 
 languages_path = os.path.join(input_path, 'languages')
 
 if not os.path.exists(temp_path): os.mkdir(temp_path)
 
 sys.path.append(languages_path)
-from EN import context
+if lang == "EN": from EN import context
+elif lang == "RU": from RU import context
 
 # ---------------------------------------------------------------------
 # ---------------- Compilate templates
