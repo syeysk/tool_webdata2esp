@@ -3,12 +3,26 @@ import mimetypes
 import os
 import gzip
 import sys
+import importlib
 
 from jinja2 import Environment, FileSystemLoader#, select_autoescape
 
 import min_html
 import min_css
 import min_js
+
+def get_context(context, lang, path, x=0):
+    sys.path.clear()
+    sys.path.append(path)
+    if lang in sys.modules: del sys.modules[lang]
+    module_lang = importlib.import_module(lang)
+    context.update(module_lang.context)
+    #print(x, module_lang, sys.path)
+    x += 1
+    if x == 5: exit()
+    if 'path' in dir(module_lang):
+        for m_path in module_lang.path: get_context(context, lang, m_path, x)
+
 
 mHTML = min_html.MinHTML()
 mCSS = min_css.MinCSS()
@@ -19,10 +33,10 @@ mJS = min_js.MinJS()
 
 input_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfr_fgmt_webif_main'))
 output_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFR'))
-#input_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfnli_fgmt_webif_main'))
-#output_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
+input_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfnli_fgmt_webif_main'))
+output_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
 
-lang = "EN"
+lang = "RU"
 
 temp_path = os.path.join(os.getcwd(), 'temp')
 fnames = ['index.html']
@@ -31,13 +45,17 @@ fname_out = os.path.join(output_path, 'webpage.ino')
 fname_out2 = os.path.join(output_path, 'set_handlers.ino')
 fname_out3 = os.path.join(output_path, 'constants.ino')
 
-languages_path = os.path.join(input_path, 'languages')
-
 if not os.path.exists(temp_path): os.mkdir(temp_path)
 
-sys.path.append(languages_path)
-if lang == "EN": from EN import context
-elif lang == "RU": from RU import context
+context = {}
+get_context(context, lang, os.path.join(input_path, 'languages'))
+
+'''sys.path.append(languages_path)
+if lang == "EN": import EN as module_lang
+elif lang == "RU": import RU as module_lang
+for path in module_lang.path:
+    f(module_lang.context, path, lang)
+'''
 
 # ---------------------------------------------------------------------
 # ---------------- Compilate templates
