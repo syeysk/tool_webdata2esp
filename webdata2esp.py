@@ -31,11 +31,6 @@ mJS = min_js.MinJS()
 # ---------------------------------------------------------------------
 # ---------------- User config
 
-device_type = "wfnli"
-lang = "RU"
-fnames = ['index.html']
-
-
 devices = {
     "wfr": {
         "input_path": os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfr_fgmt_webif_main')),
@@ -46,6 +41,29 @@ devices = {
         "output_path": os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
     }
 }
+
+# ---------------------------------------------------------------------
+# ---------------- Command-line Interface
+
+cli_parser = argparse.ArgumentParser(description='Script for integration web-files into Arduino-programm')
+cli_parser.add_argument('device_type')
+cli_parser.add_argument('-l', '--lang', default='EN', help='language for text in web-files')
+cli_parser.add_argument('-f', '--file', dest='files', action='append', default=['index.html'], help='list of "*.html" files for transformation. All local links in this files will include in this list automatically.')
+
+cli_args = cli_parser.parse_args()
+
+if args.device_type not in devices:
+    print('This device type don\'t exists.')
+    exit()
+
+# ---------------------------------------------------------------------
+# ---------------- Config
+
+device_type = cli_args.device_type #"wfnli"
+lang = cli_args.lang.upper() #"RU"
+fnames = cli_args.files #['index.html']
+
+#------------------
 
 input_path = devices[device_type]["input_path"]
 output_path = devices[device_type]["output_path"]
@@ -58,8 +76,15 @@ fname_out3 = os.path.join(output_path, 'constants.ino')
 
 if not os.path.exists(temp_path): os.mkdir(temp_path)
 
+# ---------------------------------------------------------------------
+# ---------------- Other
+
+# getting context b(translation)
+
 context = {}
 get_context(context, lang, os.path.join(input_path, 'languages'))
+
+# init templates
 
 env = Environment(
     loader=FileSystemLoader(input_path)
@@ -67,6 +92,7 @@ env = Environment(
 )
 
 # ---------------------------------------------------------------------
+# ---------------- Transformation
 
 with open(fname_out, 'w') as f_out, open(fname_out2, 'w') as f_out2, open(fname_out3, 'w') as f_out3:
 
