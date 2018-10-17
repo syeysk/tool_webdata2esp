@@ -4,6 +4,7 @@ import gzip
 import sys
 import importlib
 import argparse
+import configparser
 
 from jinja2 import Environment, FileSystemLoader#, select_autoescape
 
@@ -29,20 +30,6 @@ mCSS = min_css.MinCSS()
 mJS = min_js.MinJS()
 
 # ---------------------------------------------------------------------
-# ---------------- User config
-
-devices = {
-    "wfr": {
-        "input_path": os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfr_fgmt_webif_main')),
-        "output_path": os.path.expanduser(os.path.join('~', 'Arduino', 'WFR'))
-    },
-    "wfnli": {
-        "input_path": os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfnli_fgmt_webif_main')),
-        "output_path": os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
-    }
-}
-
-# ---------------------------------------------------------------------
 # ---------------- Command-line Interface
 
 cli_parser = argparse.ArgumentParser(description='Script for integration web-files into Arduino-programm')
@@ -52,21 +39,18 @@ cli_parser.add_argument('-f', '--file', dest='files', action='append', default=[
 
 cli_args = cli_parser.parse_args()
 
-if args.device_type not in devices:
-    print('This device type don\'t exists.')
-    exit()
-
 # ---------------------------------------------------------------------
 # ---------------- Config
 
-device_type = cli_args.device_type #"wfnli"
-lang = cli_args.lang.upper() #"RU"
-fnames = cli_args.files #['index.html']
+device_type = cli_args.device_type # "wfnli"
+lang = cli_args.lang.upper() # "RU"
+fnames = cli_args.files # ['index.html']
 
-#------------------
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
 
-input_path = devices[device_type]["input_path"]
-output_path = devices[device_type]["output_path"]
+input_path = os.path.expanduser(os.path.normpath(config['device.'+device_type]["input_path"]))
+output_path = os.path.expanduser(os.path.normpath(config['device.'+device_type]["output_path"]))
 
 temp_path = os.path.join(os.getcwd(), 'temp')
 
