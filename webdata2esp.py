@@ -1,9 +1,9 @@
-import re
 import mimetypes
 import os
 import gzip
 import sys
 import importlib
+import argparse
 
 from jinja2 import Environment, FileSystemLoader#, select_autoescape
 
@@ -31,15 +31,26 @@ mJS = min_js.MinJS()
 # ---------------------------------------------------------------------
 # ---------------- User config
 
-input_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfr_fgmt_webif_main'))
-output_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFR'))
-input_path = os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfnli_fgmt_webif_main'))
-output_path = os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
-
+device_type = "wfnli"
 lang = "RU"
+fnames = ['index.html']
+
+
+devices = {
+    "wfr": {
+        "input_path": os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfr_fgmt_webif_main')),
+        "output_path": os.path.expanduser(os.path.join('~', 'Arduino', 'WFR'))
+    },
+    "wfnli": {
+        "input_path": os.path.expanduser(os.path.join('~', 'Репозитории', 'syeysk', 'wfnli_fgmt_webif_main')),
+        "output_path": os.path.expanduser(os.path.join('~', 'Arduino', 'WFNLI'))
+    }
+}
+
+input_path = devices[device_type]["input_path"]
+output_path = devices[device_type]["output_path"]
 
 temp_path = os.path.join(os.getcwd(), 'temp')
-fnames = ['index.html']
 
 fname_out = os.path.join(output_path, 'webpage.ino')
 fname_out2 = os.path.join(output_path, 'set_handlers.ino')
@@ -49,16 +60,6 @@ if not os.path.exists(temp_path): os.mkdir(temp_path)
 
 context = {}
 get_context(context, lang, os.path.join(input_path, 'languages'))
-
-'''sys.path.append(languages_path)
-if lang == "EN": import EN as module_lang
-elif lang == "RU": import RU as module_lang
-for path in module_lang.path:
-    f(module_lang.context, path, lang)
-'''
-
-# ---------------------------------------------------------------------
-# ---------------- Compilate templates
 
 env = Environment(
     loader=FileSystemLoader(input_path)
