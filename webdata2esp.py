@@ -115,9 +115,9 @@ def transform(path_webpage, path_set_handlers, path_constants, fnames, temp_path
 
 if __name__ == '__main__':
     cli_parser = argparse.ArgumentParser(description='Script for integration web-files into Arduino-program')
-    cli_parser.add_argument('input_path')
-    cli_parser.add_argument('output_path')
-    cli_parser.add_argument('-l', '--lang', default='EN', help='language for text in web-files')
+    cli_parser.add_argument('input', dest='input_path')
+    cli_parser.add_argument('output', dest='output_path')
+    cli_parser.add_argument('-l', '--lang', default='EN', help='language for text in web-files', dest='lang')
     cli_parser.add_argument(
         '-f',
         '--file',
@@ -128,8 +128,8 @@ if __name__ == '__main__':
              'All local links in this files will include in this list automatically.'
     )
     cli_args = cli_parser.parse_args()
-    input_path = os.path.expanduser(os.path.normpath(cli_args.input_path))  # ~/Репозитории/syeysk/wfr_fgmt_webif_main
-    output_path = os.path.expanduser(os.path.normpath(cli_args.output_path))  # ~/Arduino/WFR
+    input_path = os.path.expanduser(os.path.normpath(cli_args.input_path))
+    output_path = os.path.expanduser(os.path.normpath(cli_args.output_path))
     temp_path = os.path.join(os.getcwd(), 'temp')
     if not os.path.exists(temp_path):
         os.mkdir(temp_path)
