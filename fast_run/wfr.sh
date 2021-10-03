@@ -1,1 +1,1 @@
-python ../webdata2esp.py --input_path ~/Репозитории/syeysk/wfr_fgmt_webif_main --output ~/Arduino/WFR --lang ru
+python ../webdata2esp.py --input ~/Репозитории/syeysk/wfr_fgmt_webif_main --output ~/Arduino/WFR --lang ru

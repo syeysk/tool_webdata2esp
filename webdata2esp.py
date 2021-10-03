@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import mimetypes
 import os
 import gzip
@@ -12,15 +14,14 @@ import min_css
 import min_js
 
 CONSTANTS_INO_BODY_BEFORE_BYTES = 'const char const_{func_name}[{fsize_in}] PROGMEM = {{'
-CONSTANTS_INO_BODY_AFTER_BYTES = '0};\r\n'
-CONSTANTS_INO_TAIL = '\r\n'
+CONSTANTS_INO_BODY_AFTER_BYTES = '};\r\n'
 SET_HANDLERS_INO_HEAD = 'void set_handlers(void) {{\r\n'
 SET_HANDLERS_INO_BODY = '    webServer.on("/{fname_in}", HTTP_GET, {func_name});\r\n'
 SET_HANDLERS_INO_TAIL = '}\r\n'
-WEBPAGE_INO_BODY = 'void {func_name}() {{\r\n'
-'    webServer.sendHeader("Content-Encoding", "gzip");\r\n'
-#  '    File f = SPIFFS.open("/index.html", "r");\r\n'
-'    webServer.send_P(200, "{fmtype}", const_{func_name}, {fsize_in});\r\n}\r\n'
+WEBPAGE_INO_BODY = '''void {func_name}() {{\r
+    webServer.sendHeader("Content-Encoding", "gzip");\r
+    //File f = SPIFFS.open("/index.html", "r");\r
+    webServer.send_P(200, "{fmtype}", const_{func_name}, {fsize_in});\r\n}}\r\n'''
 WEBPAGE_INO_TAIL = '\r\n'
 
 mHTML = min_html.MinHTML()
@@ -73,7 +74,7 @@ def transform(path_webpage, path_set_handlers, path_constants, fnames, temp_path
             fpath_in = fpath_in_min
             print('  compilation of template...')
             template = env.get_template(fname_in)
-            with open(fpath_in, 'w') as f:
+            with open(fpath_in, 'w', encoding='utf-8') as f:
                 f.write(template.render(context))
 
             print('  minification...')
@@ -81,8 +82,8 @@ def transform(path_webpage, path_set_handlers, path_constants, fnames, temp_path
                 mHTML.min(fpath_in, fpath_in_min, fnames)
             elif fname_in.endswith('.css'):
                 mCSS.min(fpath_in, fpath_in_min)
-            elif fname_in.endswith('.js'):
-                mJS.min(fpath_in, fpath_in_min)
+            # elif fname_in.endswith('.js'):
+            #     mJS.min(fpath_in, fpath_in_min)
 
             print('  archiving...')
             gz_fpath_in = '{}.gz'.format(fpath_in)
@@ -102,20 +103,19 @@ def transform(path_webpage, path_set_handlers, path_constants, fnames, temp_path
             f_out3.write(CONSTANTS_INO_BODY_BEFORE_BYTES.format(func_name=func_name, fsize_in=fsize_in))
             with open(gz_fpath_in, 'rb') as f_in:
                 for i in range(1, fsize_in):
-                    f_out3.write(str(f_in.read(1)[0])+',')
+                    f_out3.write('{}{}'.format(f_in.read(1)[0], ',' if i < fsize_in-1 else ''))
                     f_in.seek(i)
 
             f_out3.write(CONSTANTS_INO_BODY_AFTER_BYTES)
 
         f_out.write(WEBPAGE_INO_TAIL)
         f_out2.write(SET_HANDLERS_INO_TAIL)
-        f_out3.write(CONSTANTS_INO_TAIL)
 
 
 if __name__ == '__main__':
     cli_parser = argparse.ArgumentParser(description='Script for integration web-files into Arduino-program')
-    cli_parser.add_argument('input', dest='input_path')
-    cli_parser.add_argument('output', dest='output_path')
+    cli_parser.add_argument('--input', dest='input_path')
+    cli_parser.add_argument('--output', dest='output_path')
     cli_parser.add_argument('-l', '--lang', default='EN', help='language for text in web-files', dest='lang')
     cli_parser.add_argument(
         '-f',
