@@ -1,0 +1,35 @@
+fieldset {border-radius: 6px; border: 1px solid #eaa700}
+input {cursor:pointer;margin:3px;padding:5px 3px;}
+legend {color:#9a6e01;}
+
+.content_block_right {text-align:right;}
+
+/* для скриптов */
+
+.hidden {
+    display: none !important;
+}
+
+/* навигационные вкладки и контент */
+
+.content {display: none; padding:30px 10px 10px 10px}
+.content_active {display: block;}
+.navpanel {position:absolute;top:0;left:0;color:#ffffff;text-align:center;width:100%;}
+.navpanel div {cursor:pointer;background:#eaa700;padding:5px 10px 5px 10px;display:inline-block;vertical-align:top;}
+.navpanel div.active {background:#ffbe1c;color:#775500;}
+.navpanel div:hover {padding-top:15px;}
+
+/* вкладка управления */
+
+#content_managing {text-align: center;}
+#content_managing input.turn_button {color:white; font-size: 18pt; border-radius: 15px; margin: 5px; padding: 16px 27px;}
+#content_managing input.turn_button[data-value="0"] {background: #c70005;}
+#content_managing input.turn_button[data-value="1"] {background: green;}
+
+/* консоль уведомлений */
+
+#notes{position:fixed;bottom:0;right:0;width:100%;text-align:left; display: flex;flex-flow: wrap-reverse;}
+#notes .note{background:rgba(34, 34, 34, 0.8);padding:5px;overflow-x:auto;width:100%;}
+#notes .note:nth-child(2) {opacity:0.85;}
+#notes .note:nth-child(3) {opacity:0.70;}
+#notes .note:nth-child(4) {opacity:0.55;}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width">
+        <title>{{ product_name }} v{{ product_version }}</title>
+        <script src="webif_libs/functions_embedded.js"> </script>
+        <script src="functions_wfnli.js"> </script>
+        <link rel="stylesheet" type="text/css" href="index.css">
+    </head>
+    <body>
+
+        <div class="navpanel">
+            <div data-content="managing">{{ panel_managing }}</div>
+            <div data-content="set">{{ panel_set }}</div>
+        </div>
+
+        <div class="content" id="content_managing">
+            <div>
+                <input type="button" value='{{ on_off }}' data-value='0' class='turn_button' id="managing_btn_turn">
+                <input type="button" value='{{ demo }}' data-value='0' class='turn_button' id="managing_btn_demo">
+                <br>
+                <input style="width:100%;" type="range" value='0' id="managing_btn_demo_speed" min='1' max='127'>
+                <br>
+            </div>
+            <div style="text-align:left;">
+                <br>
+                <b>{{ statistic }}</b>
+                <br>
+                <table>
+                    <tr>
+                        <td>{{ time_of_job }}: </td><td> <span id="stat_time"> </span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="content" id="content_set">
+            <form id="form_wifi_mode" onchange="sendform(this, 'settings_mode');">
+                <fieldset><legend>{{ set_wifi_mode }}</legend>
+                    <label> <input type='radio' name='wifi_mode' value='1'> {{ set_wifi_mode_client }} </label>
+                    <label> <input type='radio' name='wifi_mode' value='0'> {{ set_wifi_mode_ap }} </label>
+                    <label> <input type='radio' name='wifi_mode' value='2'> {{ set_wifi_mode_both}} </label>
+                </fieldset>
+            </form>
+
+            <br>
+
+            <form class='settings' id="form_device_name">
+                <fieldset><legend>{{ set_device_name }}</legend>
+
+                <table>
+                    <tr>
+                        <td> <input type="text" name='device_name'> </td> <td> <input type='button' value='{{ save }}' onclick="sendform(this, 'settings_device_name')"> </td>
+                    </tr>
+                </table>
+
+                </fieldset>
+            </form>
+
+            <br>
+
+            <form class='settings' id="form_wifi_wifi">
+                <fieldset><legend>{{ set_wifi }}</legend>
+
+                <br><b>{{ set_wifi_mode_ap }}</b><br>
+                <table>
+                    <tr>
+                        <td>{{ set_wifi_ssid }}:</td> <td> <input type="text" name='ssidAP'> </td>
+                    </tr>
+                    <tr>
+                        <td> {{ set_wifi_password }}: </td> <td> <input type="text" name='passwordAP' minlength="8"> </td>
+                    </tr>
+                </table>
+
+                <br><b>{{ set_wifi_mode_client }}</b><br>
+                <table>
+                    <tr>
+                        <td>{{ set_wifi_ssid }}:</td> <td> <input type="text" name='ssid'> </td>
+                    </tr>
+                    <tr>
+                        <td>{{ set_wifi_password }}: </td> <td> <input type="text" name='password'> </td>
+                    </tr>
+                </table>
+
+                <br>
+
+                <input type='button' value='{{ save }}' onclick="sendform(this, 'settings')">
+
+                </fieldset>
+            </form>
+
+            <br>
+
+            <form id="form_other">
+                <fieldset><legend>{{ set_other }}</legend>
+
+                    {{ set_other_update_time }}: <input type="number" name='update_time' style="width:100px;">  {{ ms }}
+                    <input type='button' value='{{ save }}' onclick="sendform(this, 'settings_other')">
+                    <br><br>
+
+                    <div style="color:#9a1515;">
+                        <input type="button" value="{{ set_other_reset }}" onclick="if (confirm('{{ set_other_reset_question }}')) sendform(this, 'settings_reset', {func_success: function() {alert('{{ set_other_reset_done }}');}});">
+                        <input type="button" value="{{ set_other_reboot }}" onclick="if (confirm('{{ set_other_reboot_question }}')) sendform(this, 'settings_reboot', {func_after_load: function() {alert('{{ set_other_reboot_done }}');}});">
+                   </div>
+                </fieldset>
+            </form>
+
+        </div>
+
+        <script src="after_load.js"> </script>
+
+    </body>
+</html>
