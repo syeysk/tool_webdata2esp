@@ -4,7 +4,6 @@ import gzip
 import sys
 import importlib
 import argparse
-import configparser
 
 from jinja2 import Environment, FileSystemLoader  #, select_autoescape
 
@@ -29,7 +28,8 @@ mCSS = min_css.MinCSS()
 mJS = min_js.MinJS()
 
 
-def get_context(context, lang, path, x=0):
+def get_context(lang, path, x=0, context=None):
+    context = context if context is not None else {}
     sys.path.clear()
     sys.path.append(path)
     if lang in sys.modules:
@@ -44,11 +44,21 @@ def get_context(context, lang, path, x=0):
 
     if 'path' in dir(module_lang):
         for m_path in module_lang.path:
-            get_context(context, lang, m_path, x)
+            get_context(lang, m_path, x, context)
+
+    return context
 
 
-def transform(fname_out, fname_out2, fname_out3, fnames):
-    with open(fname_out, 'w') as f_out, open(fname_out2, 'w') as f_out2, open(fname_out3, 'w') as f_out3:
+def transform(path_webpage, path_set_handlers, path_constants, fnames, temp_path, input_path, language):
+    context = get_context(
+        language,
+        os.path.join(input_path, 'languages'),
+    )
+    env = Environment(
+        loader=FileSystemLoader(input_path)
+        #  autoescape=select_autoescape(['html', 'xml'])
+    )
+    with open(path_webpage, 'w') as f_out, open(path_set_handlers, 'w') as f_out2, open(path_constants, 'w') as f_out3:
         f_out2.write(SET_HANDLERS_INO_HEAD)
         print()
         for fname_in in fnames:
@@ -105,7 +115,8 @@ def transform(fname_out, fname_out2, fname_out3, fnames):
 
 if __name__ == '__main__':
     cli_parser = argparse.ArgumentParser(description='Script for integration web-files into Arduino-program')
-    cli_parser.add_argument('device_type')
+    cli_parser.add_argument('input_path')
+    cli_parser.add_argument('output_path')
     cli_parser.add_argument('-l', '--lang', default='EN', help='language for text in web-files')
     cli_parser.add_argument(
         '-f',
@@ -117,36 +128,18 @@ if __name__ == '__main__':
              'All local links in this files will include in this list automatically.'
     )
     cli_args = cli_parser.parse_args()
-
-    device_type = cli_args.device_type  # "wfnli"
-    lang = cli_args.lang.upper()  # "RU"
-    fnames = cli_args.files  # ['index.html']
-
-    config = configparser.ConfigParser()
-    config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
-
-    input_path = os.path.expanduser(os.path.normpath(config['device.' + device_type]["input_path"]))
-    output_path = os.path.expanduser(os.path.normpath(config['device.' + device_type]["output_path"]))
-
+    input_path = os.path.expanduser(os.path.normpath(cli_args.input_path))  # ~/Репозитории/syeysk/wfr_fgmt_webif_main
+    output_path = os.path.expanduser(os.path.normpath(cli_args.output_path))  # ~/Arduino/WFR
     temp_path = os.path.join(os.getcwd(), 'temp')
-
-    fname_out = os.path.join(output_path, 'webpage.ino')
-    fname_out2 = os.path.join(output_path, 'set_handlers.ino')
-    fname_out3 = os.path.join(output_path, 'constants.ino')
-
     if not os.path.exists(temp_path):
         os.mkdir(temp_path)
 
-    # getting context b(translation)
-
-    context = {}
-    get_context(context, lang, os.path.join(input_path, 'languages'))
-
-    # init templates
-
-    env = Environment(
-        loader=FileSystemLoader(input_path)
-        #  autoescape=select_autoescape(['html', 'xml'])
+    transform(
+        os.path.join(output_path, 'webpage.ino'),
+        os.path.join(output_path, 'set_handlers.ino'),
+        os.path.join(output_path, 'constants.ino'),
+        cli_args.files,
+        temp_path,
+        input_path,
+        cli_args.lang.upper()
     )
-
-    transform(fname_out, fname_out2, fname_out3, fnames)
