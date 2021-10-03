@@ -77,31 +77,30 @@ def transform(path_webpage, path_set_handlers, path_constants, fnames, temp_path
                 f.write(template.render(context))
 
             print('  minification...')
-            if fname_in.split('.')[-1] == 'html':
+            if fname_in.endswith('.html'):
                 mHTML.min(fpath_in, fpath_in_min, fnames)
-            elif fname_in.split('.')[-1] == 'css':
+            elif fname_in.endswith('.css'):
                 mCSS.min(fpath_in, fpath_in_min)
-            elif fname_in.split('.')[-1] == 'js':
+            elif fname_in.endswith('.js'):
                 mJS.min(fpath_in, fpath_in_min)
 
             print('  archiving...')
-            with open(fpath_in+'.gz', 'wb') as myzip, open(fpath_in, 'rb') as s:
+            gz_fpath_in = '{}.gz'.format(fpath_in)
+            with open(gz_fpath_in, 'wb') as myzip, open(fpath_in, 'rb') as s:
                 myzip.write(gzip.compress(s.read()))
 
-            fpath_in = '{}.gz'.format(fpath_in)
             print('  converting into C-code for Arduino...')
             fmtype = mimetypes.guess_type(fname_in)
-            fmtype = fmtype[0] if fmtype[0] else 'text/plain'
-            fsize_in = os.path.getsize(fpath_in)
+            fsize_in = os.path.getsize(gz_fpath_in)
             func_name = 'handler_{}'.format(fname_in.replace('.', '_').replace('/', '_'))
             f_out.write(WEBPAGE_INO_BODY.format(
                 func_name=func_name,
-                fmtype=fmtype,
+                fmtype=fmtype[0] if fmtype[0] else 'text/plain',
                 fsize_in=fsize_in,
             ))
             f_out2.write(SET_HANDLERS_INO_BODY.format(fname_in=fname_in, func_name=func_name))
             f_out3.write(CONSTANTS_INO_BODY_BEFORE_BYTES.format(func_name=func_name, fsize_in=fsize_in))
-            with open(fpath_in, 'rb') as f_in:
+            with open(gz_fpath_in, 'rb') as f_in:
                 for i in range(1, fsize_in):
                     f_out3.write(str(f_in.read(1)[0])+',')
                     f_in.seek(i)

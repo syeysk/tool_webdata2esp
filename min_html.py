@@ -18,11 +18,10 @@ class MinHTML:
         else:
             if not isinstance(el.tag, str):
                 el.getparent().remove(el)  # remove html-comments
-            elif el.tag == 'script' and 'src' in el.attrib and el.attrib['src']:
-                if links is not None:
+            elif links is not None:
+                if el.tag == 'script' and el.attrib.get('src'):
                     links.append(el.attrib['src'])
-            elif el.tag == 'link' and 'href' in el.attrib and el.attrib['href']:
-                if links is not None:
+                elif el.tag == 'link' and el.attrib.get('href'):
                     links.append(el.attrib['href'])
                 
         if level == 0:
