@@ -25,4 +25,4 @@ class MinHTML:
                     links.append(el.attrib['href'])
                 
         if level == 0:
-            self.document.write(file_out)
+            self.document.write(file_out, encoding='utf-8')

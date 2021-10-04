@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import mimetypes
 import os
 import gzip
+import shutil
 import sys
 import importlib
 import argparse
@@ -70,11 +69,10 @@ def transform(path_webpage, path_set_handlers, path_constants, fnames, input_pat
             print('file:', fname_in)
             fpath_in = os.path.join(input_path, fname_in)
             fpath_in_min = os.path.join(TEMP_DIRECTORY, fname_in)
-            os.system('mkdir -p "{}" && cp "{fpath_in}" "{fpath_in_min}"'.format(  # TODO: заменить Bash на Python
-                os.path.dirname(fpath_in_min),
-                fpath_in=fpath_in,
-                fpath_in_min=fpath_in_min
-            ))
+            if not os.path.exists(os.path.dirname(fpath_in_min)):
+                os.makedirs(os.path.dirname(fpath_in_min))
+
+            shutil.copy(fpath_in, fpath_in_min)
             fsize = os.path.getsize(fpath_in)
             fpath_in = fpath_in_min
             print('    SIZE: {}\n  compilation of template...'.format(fsize))
