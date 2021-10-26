@@ -4,6 +4,7 @@ import importlib.util
 import mimetypes
 import os
 import shutil
+import io
 
 from jinja2 import Environment, FileSystemLoader  # , select_autoescape
 
@@ -76,16 +77,19 @@ def transform(webpage, set_handlers, constants, fnames, input_path, language):
         fsize = os.path.getsize(fpath_in)
         print('    SIZE: {}\n  minification...'.format(fsize))
         if fname_in.endswith('.html'):
-            mHTML.min(fpath_in, fpath_in, fnames)
+            minified_data = io.BytesIO()
+            mHTML.min(fpath_in, minified_data, fnames)
+            minified_data = minified_data.getvalue()
         elif fname_in.endswith('.css'):
-            mCSS.min(fpath_in, fpath_in)
+            minified_data = io.BytesIO()
+            mCSS.min(fpath_in, minified_data)
+            minified_data = minified_data.getvalue()
         elif fname_in.endswith('.js'):
+            minified_data = bytes()
             mJS.min(fpath_in, fpath_in)
 
-        fsize = os.path.getsize(fpath_in)
-        print('    SIZE: {}\n  archiving...'.format(fsize))
-        with open(fpath_in, 'rb') as s:
-            zipped_data = gzip.compress(s.read())
+        print('    SIZE: {}\n  archiving...'.format(len(minified_data)))
+        zipped_data = gzip.compress(minified_data)
 
         # gz_fpath_in = '{}.gz'.format(fpath_in)
         # with open(gz_fpath_in, 'wb') as myzip:
