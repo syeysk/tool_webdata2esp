@@ -84,11 +84,14 @@ def transform(webpage, set_handlers, constants, fnames, input_path, language):
 
         fsize = os.path.getsize(fpath_in)
         print('    SIZE: {}\n  archiving...'.format(fsize))
-        gz_fpath_in = '{}.gz'.format(fpath_in)
-        with open(gz_fpath_in, 'wb') as myzip, open(fpath_in, 'rb') as s:
-            myzip.write(gzip.compress(s.read()))
+        with open(fpath_in, 'rb') as s:
+            zipped_data = gzip.compress(s.read())
 
-        fsize = os.path.getsize(gz_fpath_in)
+        # gz_fpath_in = '{}.gz'.format(fpath_in)
+        # with open(gz_fpath_in, 'wb') as myzip:
+        #     myzip.write(zip_data)
+
+        fsize = len(zipped_data)
         print('    SIZE: {}\n  converting into C-code for Arduino...'.format(fsize))
         fmtype = mimetypes.guess_type(fname_in)
         func_name = 'handler_{}'.format(fname_in.replace('.', '_').replace('/', '_'))
@@ -99,10 +102,8 @@ def transform(webpage, set_handlers, constants, fnames, input_path, language):
         ))
         io_set_handlers.write(SET_HANDLERS_INO_BODY.format(fname_in=fname_in, func_name=func_name))
         io_constants.write(CONSTANTS_INO_BODY_BEFORE_BYTES.format(func_name=func_name, fsize_in=fsize))
-        with open(gz_fpath_in, 'rb') as f_in:
-            for i in range(1, fsize):
-                io_constants.write('{}{}'.format(f_in.read(1)[0], ',' if i < fsize-1 else ''))
-                f_in.seek(i)
+        for byte, i in enumerate(zipped_data, 1):
+            io_constants.write('{}{}'.format(byte, ',' if i < fsize-1 else ''))
 
         io_constants.write(CONSTANTS_INO_BODY_AFTER_BYTES)
 
