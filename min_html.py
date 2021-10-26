@@ -12,9 +12,10 @@ class MinHTML:
             self.min(file_in, file_out, links, _el)
 
         if el.text:
-            el.text = el.text.replace('\r', '')
+            el.text = el.text.strip()  # replace('\r', '')
+
         if el.tail:
-            el.tail = el.tail.replace('\r', '')
+            el.tail = el.tail.strip()  # replace('\r', '')
 
         if not isinstance(el.tag, str):
             el.getparent().remove(el)  # remove html-comments
@@ -25,4 +26,4 @@ class MinHTML:
                 links.append(el.attrib['href'])
                 
         if document:
-            document.write(file_out, encoding='utf-8')
+            document.write(file_out, encoding='utf-8', method='html', pretty_print=False, strip_text=True)
