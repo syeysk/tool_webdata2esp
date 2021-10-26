@@ -80,7 +80,7 @@ def transform(webpage, set_handlers, constants, fnames, input_path, language):
         elif fname_in.endswith('.css'):
             mCSS.min(fpath_in, fpath_in)
         elif fname_in.endswith('.js'):
-            mJS.min(fpath_in, fpath_in_min)
+            mJS.min(fpath_in, fpath_in)
 
         fsize = os.path.getsize(fpath_in)
         print('    SIZE: {}\n  archiving...'.format(fsize))
