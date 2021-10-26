@@ -1,12 +1,11 @@
+import argparse
+import gzip
+import importlib.util
 import mimetypes
 import os
-import gzip
 import shutil
-import sys
-import importlib
-import argparse
 
-from jinja2 import Environment, FileSystemLoader  #, select_autoescape
+from jinja2 import Environment, FileSystemLoader  # , select_autoescape
 
 import min_html
 import min_css
@@ -29,23 +28,18 @@ mCSS = min_css.MinCSS()
 mJS = min_js.MinJS()
 
 
-def get_context(lang, path, x=0, context=None):
+def get_context(lang, path, level=0, context=None):
+    if level == 5:
+        return context
+
     context = context if context is not None else {}
-    sys.path.clear()
-    sys.path.append(path)
-    if lang in sys.modules:
-        del sys.modules[lang]
-
-    module_lang = importlib.import_module(lang)
+    _path = '{}{}{}.py'.format(path, os.path.sep, lang)
+    spec = importlib.util.spec_from_file_location(lang, _path)
+    module_lang = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module_lang)
     context.update(module_lang.context)
-    # print(x, module_lang, sys.path)
-    x += 1
-    if x == 5:
-        exit()
-
-    if 'path' in dir(module_lang):
-        for m_path in module_lang.path:
-            get_context(lang, m_path, x, context)
+    for new_path in getattr(module_lang, 'path', []):
+        get_context(lang, new_path, level + 1, context)
 
     return context
 
