@@ -3,7 +3,7 @@ import gzip
 import importlib.util
 import mimetypes
 import os
-import shutil
+# import shutil
 import io
 
 from jinja2 import Environment, FileSystemLoader  # , select_autoescape
@@ -12,7 +12,7 @@ import min_html
 import min_css
 import min_js
 
-TEMP_DIRECTORY = os.path.join(os.path.expandvars('%TEMP%'), 'webdata2esp')
+# TEMP_DIRECTORY = os.path.join(os.path.expandvars('%TEMP%'), 'webdata2esp')
 CONSTANTS_INO_BODY_BEFORE_BYTES = 'const char const_{func_name}[{fsize_in}] PROGMEM = {{'
 CONSTANTS_INO_BODY_AFTER_BYTES = '};\r\n'
 SET_HANDLERS_INO_HEAD = 'void set_handlers(void) {{\r\n'
@@ -46,8 +46,8 @@ def get_context(lang, path, level=0, context=None):
 
 
 def transform(webpage, set_handlers, constants, fnames, input_path, language):
-    if not os.path.exists(TEMP_DIRECTORY):
-        os.mkdir(TEMP_DIRECTORY)
+    # if not os.path.exists(TEMP_DIRECTORY):
+    #     os.mkdir(TEMP_DIRECTORY)
 
     context = get_context(
         language,
@@ -62,32 +62,27 @@ def transform(webpage, set_handlers, constants, fnames, input_path, language):
     for fname_in in fnames:
         print('file:', fname_in)
         fpath_in = os.path.join(input_path, fname_in)
-        fpath_in_min = os.path.join(TEMP_DIRECTORY, fname_in)
-        if not os.path.exists(os.path.dirname(fpath_in_min)):
-            os.makedirs(os.path.dirname(fpath_in_min))
+        # fpath_in_min = os.path.join(TEMP_DIRECTORY, fname_in)
+        # if not os.path.exists(os.path.dirname(fpath_in_min)):
+        #     os.makedirs(os.path.dirname(fpath_in_min))
 
-        shutil.copy(fpath_in, fpath_in_min)
-        fsize = os.path.getsize(fpath_in)
-        fpath_in = fpath_in_min
-        print('    SIZE: {}\n  compilation of template...'.format(fsize))
+        # shutil.copy(fpath_in, fpath_in_min)
+        print('    SIZE: {}\n  compilation of template...'.format(os.path.getsize(fpath_in)))
         template = env.get_template(fname_in)
-        with open(fpath_in, 'w', encoding='utf-8') as f:
-            f.write(template.render(context))
+        templated_data: str = template.render(context)
+        # with open(fpath_in_min, 'w', encoding='utf-8') as f:
+        #     f.write(templated_data)
 
-        fsize = os.path.getsize(fpath_in)
-        print('    SIZE: {}\n  minification...'.format(fsize))
+        print('    SIZE: {}\n  minification...'.format(len(templated_data.encode('utf-8'))))
+        minified_data = io.BytesIO()
         if fname_in.endswith('.html'):
-            minified_data = io.BytesIO()
-            mHTML.min(fpath_in, minified_data, fnames)
-            minified_data = minified_data.getvalue()
+            mHTML.min(io.StringIO(templated_data), minified_data, fnames)
         elif fname_in.endswith('.css'):
-            minified_data = io.BytesIO()
-            mCSS.min(fpath_in, minified_data)
-            minified_data = minified_data.getvalue()
+            mCSS.min(templated_data, minified_data)
         elif fname_in.endswith('.js'):
-            minified_data = bytes()
-            mJS.min(fpath_in, fpath_in)
+            mJS.min(templated_data, minified_data)
 
+        minified_data = minified_data.getvalue()
         print('    SIZE: {}\n  archiving...'.format(len(minified_data)))
         zipped_data = gzip.compress(minified_data)
 
