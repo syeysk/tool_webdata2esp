@@ -11,7 +11,6 @@ import min_html
 import min_css
 import min_js
 
-# TEMP_DIRECTORY = os.path.join(os.path.expandvars('%TEMP%'), 'webdata2esp')
 CONSTANTS_INO_BODY_BEFORE_BYTES = 'const char const_{func_name}[{fsize_in}] PROGMEM = {{'
 CONSTANTS_INO_BODY_AFTER_BYTES = '};\r\n'
 SET_HANDLERS_INO_HEAD = 'void set_handlers(void) {{\r\n'
@@ -29,8 +28,6 @@ mJS = min_js.MinJS()
 
 
 def transform(io_webpage, io_set_handlers, io_constants, fnames, input_path, language, func_logger):
-    # if not os.path.exists(TEMP_DIRECTORY):
-    #     os.mkdir(TEMP_DIRECTORY)
     context_path = '{}{}languages{}{}.json'.format(input_path, os.path.sep, os.path.sep, language)
     with open(context_path, 'r') as context_file:
         context = json.load(context_file)
@@ -43,16 +40,10 @@ def transform(io_webpage, io_set_handlers, io_constants, fnames, input_path, lan
     for fname_in in fnames:
         func_logger('file:', fname_in)
         fpath_in = os.path.join(input_path, fname_in)
-        # fpath_in_min = os.path.join(TEMP_DIRECTORY, fname_in)
-        # if not os.path.exists(os.path.dirname(fpath_in_min)):
-        #     os.makedirs(os.path.dirname(fpath_in_min))
 
-        # shutil.copy(fpath_in, fpath_in_min)
         func_logger('    SIZE: {}\n  compilation of template...'.format(os.path.getsize(fpath_in)))
         template = env.get_template(fname_in)
         templated_data: str = template.render(context)
-        # with open(fpath_in_min, 'w', encoding='utf-8') as f:
-        #     f.write(templated_data)
 
         func_logger('    SIZE: {}\n  minification...'.format(len(templated_data.encode('utf-8'))))
         minified_data = io.BytesIO()
@@ -66,10 +57,6 @@ def transform(io_webpage, io_set_handlers, io_constants, fnames, input_path, lan
         minified_data = minified_data.getvalue()
         func_logger('    SIZE: {}\n  archiving...'.format(len(minified_data)))
         zipped_data = gzip.compress(minified_data)
-
-        # gz_fpath_in = '{}.gz'.format(fpath_in)
-        # with open(gz_fpath_in, 'wb') as myzip:
-        #     myzip.write(zip_data)
 
         fsize = len(zipped_data)
         func_logger('    SIZE: {}\n  converting into C-code for Arduino...'.format(fsize))
