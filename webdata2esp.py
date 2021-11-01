@@ -1,9 +1,8 @@
 import argparse
 import gzip
-import importlib.util
+import json
 import mimetypes
 import os
-# import shutil
 import io
 
 from jinja2 import Environment, FileSystemLoader  # , select_autoescape
@@ -29,30 +28,13 @@ mCSS = min_css.MinCSS()
 mJS = min_js.MinJS()
 
 
-def get_context(lang, path, level=0, context=None):
-    if level == 5:
-        return context
-
-    context = context if context is not None else {}
-    _path = '{}{}{}.py'.format(path, os.path.sep, lang)
-    spec = importlib.util.spec_from_file_location(lang, _path)
-    module_lang = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module_lang)
-    context.update(module_lang.context)
-    for new_path in getattr(module_lang, 'path', []):
-        get_context(lang, new_path, level + 1, context)
-
-    return context
-
-
 def transform(io_webpage, io_set_handlers, io_constants, fnames, input_path, language, func_logger):
     # if not os.path.exists(TEMP_DIRECTORY):
     #     os.mkdir(TEMP_DIRECTORY)
+    context_path = '{}{}languages{}{}.json'.format(input_path, os.path.sep, os.path.sep, language)
+    with open(context_path, 'r') as context_file:
+        context = json.load(context_file)
 
-    context = get_context(
-        language,
-        os.path.join(input_path, 'languages'),
-    )
     env = Environment(
         loader=FileSystemLoader(input_path)
         #  autoescape=select_autoescape(['html', 'xml'])
