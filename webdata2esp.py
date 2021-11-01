@@ -45,7 +45,7 @@ def get_context(lang, path, level=0, context=None):
     return context
 
 
-def transform(webpage, set_handlers, constants, fnames, input_path, language):
+def transform(io_webpage, io_set_handlers, io_constants, fnames, input_path, language, func_logger):
     # if not os.path.exists(TEMP_DIRECTORY):
     #     os.mkdir(TEMP_DIRECTORY)
 
@@ -58,22 +58,21 @@ def transform(webpage, set_handlers, constants, fnames, input_path, language):
         #  autoescape=select_autoescape(['html', 'xml'])
     )
     io_set_handlers.write(SET_HANDLERS_INO_HEAD)
-    print()
     for fname_in in fnames:
-        print('file:', fname_in)
+        func_logger('file:', fname_in)
         fpath_in = os.path.join(input_path, fname_in)
         # fpath_in_min = os.path.join(TEMP_DIRECTORY, fname_in)
         # if not os.path.exists(os.path.dirname(fpath_in_min)):
         #     os.makedirs(os.path.dirname(fpath_in_min))
 
         # shutil.copy(fpath_in, fpath_in_min)
-        print('    SIZE: {}\n  compilation of template...'.format(os.path.getsize(fpath_in)))
+        func_logger('    SIZE: {}\n  compilation of template...'.format(os.path.getsize(fpath_in)))
         template = env.get_template(fname_in)
         templated_data: str = template.render(context)
         # with open(fpath_in_min, 'w', encoding='utf-8') as f:
         #     f.write(templated_data)
 
-        print('    SIZE: {}\n  minification...'.format(len(templated_data.encode('utf-8'))))
+        func_logger('    SIZE: {}\n  minification...'.format(len(templated_data.encode('utf-8'))))
         minified_data = io.BytesIO()
         if fname_in.endswith('.html'):
             mHTML.min(io.StringIO(templated_data), minified_data, fnames)
@@ -83,7 +82,7 @@ def transform(webpage, set_handlers, constants, fnames, input_path, language):
             mJS.min(templated_data, minified_data)
 
         minified_data = minified_data.getvalue()
-        print('    SIZE: {}\n  archiving...'.format(len(minified_data)))
+        func_logger('    SIZE: {}\n  archiving...'.format(len(minified_data)))
         zipped_data = gzip.compress(minified_data)
 
         # gz_fpath_in = '{}.gz'.format(fpath_in)
@@ -91,7 +90,7 @@ def transform(webpage, set_handlers, constants, fnames, input_path, language):
         #     myzip.write(zip_data)
 
         fsize = len(zipped_data)
-        print('    SIZE: {}\n  converting into C-code for Arduino...'.format(fsize))
+        func_logger('    SIZE: {}\n  converting into C-code for Arduino...'.format(fsize))
         fmtype = mimetypes.guess_type(fname_in)
         func_name = 'handler_{}'.format(fname_in.replace('.', '_').replace('/', '_'))
         io_webpage.write(WEBPAGE_INO_BODY.format(
@@ -133,11 +132,13 @@ if __name__ == '__main__':
     path_constants = os.path.join(output_path, 'constants.ino')
     with open(path_webpage, 'w') as io_webpage, open(path_set_handlers, 'w') as io_set_handlers:
         with open(path_constants, 'w') as io_constants:
+            print()
             transform(
                 io_webpage,
                 io_set_handlers,
                 io_constants,
                 cli_args.files,
                 input_path,
-                cli_args.lang.upper()
+                cli_args.lang.upper(),
+                print,
             )
