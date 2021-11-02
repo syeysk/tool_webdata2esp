@@ -5,7 +5,7 @@ import mimetypes
 import os
 import io
 
-from jinja2 import Environment, FileSystemLoader  # , select_autoescape
+from jinja2 import Template
 
 import min_html
 import min_css
@@ -27,37 +27,30 @@ mCSS = min_css.MinCSS()
 mJS = min_js.MinJS()
 
 
-def transform(io_webpage, io_set_handlers, io_constants, fnames, input_path, language, func_logger):
-    context_path = '{}{}languages{}{}.json'.format(input_path, os.path.sep, os.path.sep, language)
-    with open(context_path, 'r') as context_file:
-        context = json.load(context_file)
-
-    env = Environment(
-        loader=FileSystemLoader(input_path)
-        #  autoescape=select_autoescape(['html', 'xml'])
-    )
+def transform(io_webpage, io_set_handlers, io_constants, fnames, context, func_logger):
     io_set_handlers.write(SET_HANDLERS_INO_HEAD)
-    for fname_in in fnames:
-        func_logger('file:', fname_in)
-        fpath_in = os.path.join(input_path, fname_in)
+    for fname_in, file_data in fnames:
+        func_logger('file: {}'.format(fname_in))
+        func_logger('    SIZE: {}'.format(len(file_data)))
+        is_str_data = fname_in.endswith('.html') or fname_in.endswith('.css') or fname_in.endswith('.js')
+        if is_str_data:
+            func_logger('  rendering of template...')
+            template = Template(file_data.decode('utf-8'))
+            templated_data: str = template.render(context)
+            func_logger('    SIZE: {}\n  minification...'.format(len(templated_data.encode('utf-8'))))
+            minified_data: io.BytesIO = io.BytesIO()
+            if fname_in.endswith('.html'):
+                mHTML.min(io.StringIO(templated_data), minified_data)
+            elif fname_in.endswith('.css'):
+                mCSS.min(templated_data, minified_data)
+            elif fname_in.endswith('.js'):
+                mJS.min(templated_data, minified_data)
 
-        func_logger('    SIZE: {}\n  compilation of template...'.format(os.path.getsize(fpath_in)))
-        template = env.get_template(fname_in)
-        templated_data: str = template.render(context)
+            file_data: bytes = minified_data.getvalue()
+            func_logger('    SIZE: {}'.format(len(file_data)))
 
-        func_logger('    SIZE: {}\n  minification...'.format(len(templated_data.encode('utf-8'))))
-        minified_data = io.BytesIO()
-        if fname_in.endswith('.html'):
-            mHTML.min(io.StringIO(templated_data), minified_data, fnames)
-        elif fname_in.endswith('.css'):
-            mCSS.min(templated_data, minified_data)
-        elif fname_in.endswith('.js'):
-            mJS.min(templated_data, minified_data)
-
-        minified_data = minified_data.getvalue()
-        func_logger('    SIZE: {}\n  archiving...'.format(len(minified_data)))
-        zipped_data = gzip.compress(minified_data)
-
+        func_logger('  archiving...')
+        zipped_data = gzip.compress(file_data)
         fsize = len(zipped_data)
         func_logger('    SIZE: {}\n  converting into C-code for Arduino...'.format(fsize))
         fmtype = mimetypes.guess_type(fname_in)
@@ -79,6 +72,12 @@ def transform(io_webpage, io_set_handlers, io_constants, fnames, input_path, lan
 
 
 if __name__ == '__main__':
+    def get_files_from_fs(fnames, input_path):
+        for fname_in in fnames:
+            fpath_in = os.path.join(input_path, fname_in)
+            with open(fpath_in, 'rb') as file:
+                yield fname_in, file.read()
+
     cli_parser = argparse.ArgumentParser(description='Script for integration web-files into Arduino-program')
     cli_parser.add_argument('--input', dest='input_path')
     cli_parser.add_argument('--output', dest='output_path')
@@ -88,13 +87,17 @@ if __name__ == '__main__':
         '--file',
         dest='files',
         action='append',
-        default=['index.html'],
+        default=['index.html', 'index.css', 'functions_wfnli.js', 'after_load.js', 'webif_libs/functions_embedded.js'],
         help='list of "*.html" files for transformation. '
              'All local links in this files will include in this list automatically.'
     )
     cli_args = cli_parser.parse_args()
     input_path = os.path.expanduser(os.path.normpath(cli_args.input_path))
     output_path = os.path.expanduser(os.path.normpath(cli_args.output_path))
+
+    context_path = '{}{}languages{}{}.json'.format(input_path, os.path.sep, os.path.sep, cli_args.lang.upper())
+    with open(context_path, 'r') as context_file:
+        context = json.load(context_file)
 
     path_webpage = os.path.join(output_path, 'webpage.ino')
     path_set_handlers = os.path.join(output_path, 'set_handlers.ino')
@@ -106,8 +109,7 @@ if __name__ == '__main__':
                 io_webpage,
                 io_set_handlers,
                 io_constants,
-                cli_args.files,
-                input_path,
-                cli_args.lang.upper(),
+                get_files_from_fs(cli_args.files, input_path),
+                context,
                 print,
             )
