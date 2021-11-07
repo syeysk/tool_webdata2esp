@@ -4,6 +4,7 @@ import json
 import mimetypes
 import os
 import io
+import zipfile
 
 from jinja2 import Template
 
@@ -71,13 +72,23 @@ def transform(io_webpage, io_set_handlers, io_constants, fnames, context, func_l
     io_set_handlers.write(SET_HANDLERS_INO_TAIL)
 
 
-if __name__ == '__main__':
-    def get_files_from_fs(fnames, input_path):
-        for fname_in in fnames:
-            fpath_in = os.path.join(input_path, fname_in)
-            with open(fpath_in, 'rb') as file:
-                yield fname_in, file.read()
+def get_files_from_archive(archive):
+    with zipfile.ZipFile(archive) as archive_object:
+        for member_name in archive_object.namelist():
+            member_info = archive_object.getinfo(member_name)
+            if not member_info.is_dir():
+                with archive_object.open(member_info) as member_file:
+                    yield member_name, member_file.read()
 
+
+def get_files_from_list_of_filenames(fnames, base_path):
+    for fname_in in fnames:
+        fpath_in = os.path.join(base_path, fname_in)
+        with open(fpath_in, 'rb') as file:
+            yield fname_in, file.read()
+
+
+if __name__ == '__main__':
     cli_parser = argparse.ArgumentParser(description='Script for integration web-files into Arduino-program')
     cli_parser.add_argument('--input', dest='input_path')
     cli_parser.add_argument('--output', dest='output_path')
@@ -94,7 +105,6 @@ if __name__ == '__main__':
     cli_args = cli_parser.parse_args()
     input_path = os.path.expanduser(os.path.normpath(cli_args.input_path))
     output_path = os.path.expanduser(os.path.normpath(cli_args.output_path))
-
     context_path = '{}{}languages{}{}.json'.format(input_path, os.path.sep, os.path.sep, cli_args.lang.upper())
     with open(context_path, 'r') as context_file:
         context = json.load(context_file)
@@ -109,7 +119,7 @@ if __name__ == '__main__':
                 io_webpage,
                 io_set_handlers,
                 io_constants,
-                get_files_from_fs(cli_args.files, input_path),
+                get_files_from_list_of_filenames(cli_args.files, input_path),
                 context,
                 print,
             )
