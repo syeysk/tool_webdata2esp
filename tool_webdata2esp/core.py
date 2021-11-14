@@ -1,6 +1,4 @@
-import argparse
 import gzip
-import json
 import mimetypes
 import os
 import io
@@ -8,9 +6,7 @@ import zipfile
 
 from jinja2 import Template
 
-import min_html
-import min_css
-import min_js
+from tool_webdata2esp import min_css, min_html, min_js
 
 CONSTANTS_INO_BODY_BEFORE_BYTES = 'const char const_{func_name}[{fsize_in}] PROGMEM = {{'
 CONSTANTS_INO_BODY_AFTER_BYTES = '};\r\n'

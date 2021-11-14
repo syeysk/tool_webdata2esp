@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 
-from core import get_files_from_list_of_filenames, transform
+from tool_webdata2esp.core import get_files_from_list_of_filenames, transform
 
 if __name__ == '__main__':
     cli_parser = argparse.ArgumentParser(description='Script for integration web-files into Arduino-program')
