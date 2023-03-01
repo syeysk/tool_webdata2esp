@@ -59,7 +59,7 @@ def transform(io_webpage, io_set_handlers, io_constants, fnames, context, func_l
         ))
         io_set_handlers.write(SET_HANDLERS_INO_BODY.format(fname_in=fname_in, func_name=func_name))
         io_constants.write(CONSTANTS_INO_BODY_BEFORE_BYTES.format(func_name=func_name, fsize_in=fsize))
-        for byte, i in enumerate(zipped_data, 1):
+        for i, byte in enumerate(zipped_data, 1):
             io_constants.write('{}{}'.format(byte, ',' if i < fsize-1 else ''))
 
         io_constants.write(CONSTANTS_INO_BODY_AFTER_BYTES)

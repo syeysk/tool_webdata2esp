@@ -8,7 +8,7 @@ with open('requirements.txt') as file:
 
 setuptools.setup(
     name='tool_webdata2esp',
-    version='0.1',
+    version='0.1.1',
     author='Polyakov Konstantin',
     author_email='shyzik93@mail.ru',
     description='The package for preparing web data for loading into ESP8266',
