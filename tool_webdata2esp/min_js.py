@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 
 class MinJS:
@@ -6,7 +7,7 @@ class MinJS:
         pass
 
     def min(self, file_in, file_out):
-        _file_in = os.path.join(os.path.expandvars('%TEMP%'), 'webdata2esp_temp.js')
+        _file_in = os.path.join(tempfile.gettempdir(), 'webdata2esp_temp.js')
         with open(_file_in, 'w', encoding='utf-8') as f:
             f.write(file_in)
 
