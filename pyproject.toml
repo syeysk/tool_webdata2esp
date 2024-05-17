@@ -15,8 +15,7 @@ classifiers = [
     "License :: OSI Approved :: LGPL-3.0 License",
     "Operating System :: OS Independent",
 ]
-dependencies = [
-]
+dependencies = {file = ["requirements.txt"]}
 
 [project.scripts]
 web2esp = "tool_webdata2esp.cli:run"
