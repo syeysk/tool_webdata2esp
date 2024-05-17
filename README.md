@@ -2,9 +2,15 @@
 
 The Webdata2esp ministers to load your web data into ESP8266 module. It's useful if you do web-interface for your device based on ESP.
 
-To use the Webdata2esp, please run the next command:
+# Install
+
+```shell
+pip install --user git+https://github.com/syeysk/tool_webdata2esp.git
+```
+
+or 
 ```bash
-python ./cli.py --input "path to your webdata" --output "path to your arduino project" --lang en
+web2esp --input "path to your webdata" --output "path to your arduino project" --lang en
 ```
 
 This command will minify and archivate your *.css, *.js and *.html files. Also thecommand will generate three *.ino files and move them into your arduino-project:

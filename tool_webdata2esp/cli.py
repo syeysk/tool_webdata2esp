@@ -4,7 +4,8 @@ import os
 
 from tool_webdata2esp.core import get_files_from_list_of_filenames, transform
 
-if __name__ == '__main__':
+
+def run():
     cli_parser = argparse.ArgumentParser(description='Script for integration web-files into Arduino-program')
     cli_parser.add_argument('--input', dest='input_path')
     cli_parser.add_argument('--output', dest='output_path')
@@ -39,3 +40,7 @@ if __name__ == '__main__':
                 context,
                 print,
             )
+
+
+if __name__ == '__main__':
+    run()

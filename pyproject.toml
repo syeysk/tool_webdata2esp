@@ -18,5 +18,8 @@ classifiers = [
 dependencies = [
 ]
 
+[project.scripts]
+web2esp = "tool_webdata2esp.cli:run"
+
 [build-system]
 requires = ["setuptools", "wheel"]
