@@ -1,2 +1,2 @@
-include LICENSE.txt README.md
+exclude example_arduino example_web fast_run
 graft tool_webdata2esp

@@ -17,9 +17,6 @@ classifiers = [
 ]
 dependencies = [
 ]
-packages = [
-  "tool_webdata2esp",
-]
 
 [project.scripts]
 web2esp = "tool_webdata2esp.cli:run"
