@@ -10,7 +10,7 @@ from tool_webdata2esp import min_css, min_html, min_js
 
 CONSTANTS_INO_BODY_BEFORE_BYTES = 'const char const_{func_name}[{fsize_in}] PROGMEM = {{'
 CONSTANTS_INO_BODY_AFTER_BYTES = '};\r\n'
-SET_HANDLERS_INO_HEAD = 'void set_handlers(void) {{\r\n'
+SET_HANDLERS_INO_HEAD = 'void set_handlers(void) {\r\n'
 SET_HANDLERS_INO_BODY = '    webServer.on("/{fname_in}", HTTP_GET, {func_name});\r\n'
 SET_HANDLERS_INO_TAIL = '}\r\n'
 WEBPAGE_INO_BODY = '''void {func_name}() {{\r
