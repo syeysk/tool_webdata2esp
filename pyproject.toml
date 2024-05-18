@@ -2,7 +2,7 @@
 name = "tool_webdata2esp"
 description = "The package for preparing web data for loading into ESP8266"
 readme = { file = "README.md", content-type = "text/markdown" }
-version = "0.1.5"
+version = "0.1.6"
 authors = [
     { name = "Polyakov Konstantin", email = "shyzik93@mail.ru" }
 ]

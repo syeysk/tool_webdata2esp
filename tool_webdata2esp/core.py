@@ -8,6 +8,12 @@ from jinja2 import Template
 
 from tool_webdata2esp import min_css, min_html, min_js
 
+SOURCE_NAME = (
+    '/* This code was generated with\n'
+    '** https://github.com/syeysk/tool_webdata2esp\n'
+    '** try online: https://py2c.ru/web2esp/\n'
+    '*/\n\n'
+)
 CONSTANTS_INO_BODY_BEFORE_BYTES = 'const char const_{func_name}[{fsize_in}] PROGMEM = {{'
 CONSTANTS_INO_BODY_AFTER_BYTES = '};\r\n'
 SET_HANDLERS_INO_HEAD = 'void set_handlers(void) {\r\n'
@@ -25,6 +31,10 @@ mJS = min_js.MinJS()
 
 
 def transform(io_webpage, io_set_handlers, io_constants, fnames, context, func_logger):
+    io_webpage.write(SOURCE_NAME)
+    io_set_handlers.write(SOURCE_NAME)
+    io_constants.write(SOURCE_NAME)
+
     io_set_handlers.write(SET_HANDLERS_INO_HEAD)
     for fname_in, file_data in fnames:
         func_logger('file: {}'.format(fname_in))
