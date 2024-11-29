@@ -9,15 +9,16 @@ def run():
     cli_parser = argparse.ArgumentParser(description='Script for integration web-files into Arduino-program')
     cli_parser.add_argument('--input', dest='input_path')
     cli_parser.add_argument('--output', dest='output_path')
+    cli_parser.add_argument('--templates', dest='templates_path')
     cli_parser.add_argument('-l', '--lang', default='EN', help='language for text in web-files', dest='lang')
     cli_parser.add_argument(
         '-f',
         '--file',
         dest='files',
         action='append',
-        default=['index.html', 'index.css', 'functions_wfnli.js', 'after_load.js', 'webif_libs/functions_embedded.js'],
+        default=['index.html'],
         help='list of "*.html" files for transformation. '
-             'All local links in this files will include in this list automatically.'
+             'All local links in these files will include in this list automatically.'
     )
     cli_args = cli_parser.parse_args()
     input_path = os.path.expanduser(os.path.normpath(cli_args.input_path))
@@ -26,20 +27,24 @@ def run():
     with open(context_path, 'r') as context_file:
         context = json.load(context_file)
 
-    path_webpage = os.path.join(output_path, 'webpage.ino')
-    path_set_handlers = os.path.join(output_path, 'set_handlers.ino')
-    path_constants = os.path.join(output_path, 'constants.ino')
-    with open(path_webpage, 'w') as io_webpage, open(path_set_handlers, 'w') as io_set_handlers:
-        with open(path_constants, 'w') as io_constants:
-            print()
-            transform(
-                io_webpage,
-                io_set_handlers,
-                io_constants,
-                get_files_from_list_of_filenames(cli_args.files, input_path),
-                context,
-                print,
-            )
+    templates = {}
+    for root, dirs, filenames in os.walk(cli_args.templates_path):
+        for filename in filenames:
+            with open(os.path.join(root, filename), 'r') as file:
+                templates[filename] = file.read()
+
+    print()
+    output_files_data = transform(
+        templates,
+        get_files_from_list_of_filenames(cli_args.files, input_path),
+        context,
+        print,
+    )
+    for output_file_name, output_file_content in output_files_data:
+        with open(os.path.join(output_path, output_file_name), 'w', encoding='utf-8') as output_file:
+            output_file.write(output_file_content)
+
+
 
 
 if __name__ == '__main__':

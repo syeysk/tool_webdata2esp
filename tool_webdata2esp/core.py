@@ -8,34 +8,14 @@ from jinja2 import Template
 
 from tool_webdata2esp import min_css, min_html, min_js
 
-SOURCE_NAME = (
-    '/* This code was generated with\n'
-    '** https://github.com/syeysk/tool_webdata2esp\n'
-    '** try online: https://py2c.ru/web2esp/\n'
-    '*/\n\n'
-)
-CONSTANTS_INO_BODY_BEFORE_BYTES = 'const char const_{func_name}[{fsize_in}] PROGMEM = {{'
-CONSTANTS_INO_BODY_AFTER_BYTES = '};\r\n'
-SET_HANDLERS_INO_HEAD = 'void set_handlers(void) {\r\n'
-SET_HANDLERS_INO_BODY = '    webServer.on("/{fname_in}", HTTP_GET, {func_name});\r\n'
-SET_HANDLERS_INO_TAIL = '}\r\n'
-WEBPAGE_INO_BODY = '''void {func_name}() {{\r
-    webServer.sendHeader("Content-Encoding", "gzip");\r
-    //File f = SPIFFS.open("/index.html", "r");\r
-    webServer.send_P(200, "{fmtype}", const_{func_name}, {fsize_in});\r\n}}\r\n'''
-WEBPAGE_INO_TAIL = '\r\n'
 
 mHTML = min_html.MinHTML()
 mCSS = min_css.MinCSS()
 mJS = min_js.MinJS()
 
 
-def transform(io_webpage, io_set_handlers, io_constants, fnames, context, func_logger):
-    io_webpage.write(SOURCE_NAME)
-    io_set_handlers.write(SOURCE_NAME)
-    io_constants.write(SOURCE_NAME)
-
-    io_set_handlers.write(SET_HANDLERS_INO_HEAD)
+def transform(templates, fnames, context, func_logger):
+    output_files_data = []
     for fname_in, file_data in fnames:
         func_logger('file: {}'.format(fname_in))
         func_logger('    SIZE: {}'.format(len(file_data)))
@@ -61,21 +41,19 @@ def transform(io_webpage, io_set_handlers, io_constants, fnames, context, func_l
         fsize = len(zipped_data)
         func_logger('    SIZE: {}\n  converting into C-code for Arduino...'.format(fsize))
         fmtype = mimetypes.guess_type(fname_in)
-        func_name = 'handler_{}'.format(fname_in.replace('.', '_').replace('/', '_'))
-        io_webpage.write(WEBPAGE_INO_BODY.format(
-            func_name=func_name,
-            fmtype=fmtype[0] if fmtype[0] else 'text/plain',
-            fsize_in=fsize,
-        ))
-        io_set_handlers.write(SET_HANDLERS_INO_BODY.format(fname_in=fname_in, func_name=func_name))
-        io_constants.write(CONSTANTS_INO_BODY_BEFORE_BYTES.format(func_name=func_name, fsize_in=fsize))
-        for i, byte in enumerate(zipped_data, 1):
-            io_constants.write('{}{}'.format(byte, ',' if i < fsize-1 else ''))
+        output_files_data.append({
+            'name': fname_in,
+            'funcname': fname_in.replace('.', '_').replace('/', '_'),
+            'size': fsize,
+            'mimetype': fmtype[0] or 'text/plain',
+            'array': ','.join(str(b) for b in zipped_data),
+        })
+    
 
-        io_constants.write(CONSTANTS_INO_BODY_AFTER_BYTES)
-
-    io_webpage.write(WEBPAGE_INO_TAIL)
-    io_set_handlers.write(SET_HANDLERS_INO_TAIL)
+    output_context = {'files': output_files_data}
+    for template_name, template_content in templates:
+        template = Template(template_content.decode('utf-8'))
+        yield template_name, template.render(output_context)
 
 
 def get_files_from_archive(archive):
