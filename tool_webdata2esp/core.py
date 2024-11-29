@@ -43,7 +43,7 @@ def transform(templates, fnames, context, func_logger):
         fmtype = mimetypes.guess_type(fname_in)
         output_files_data.append({
             'name': fname_in,
-            'funcname': fname_in.replace('.', '_').replace('/', '_'),
+            'funcname': fname_in.replace('.', '_').replace('/', '_').replace('-', '_'),
             'size': fsize,
             'mimetype': fmtype[0] or 'text/plain',
             'array': ','.join(str(b) for b in zipped_data),
